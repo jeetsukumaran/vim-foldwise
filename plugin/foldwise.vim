@@ -149,7 +149,7 @@ function s:_foldwise_tex(focal_lnum)
     let found = 0
     let level = 0
     let line_text = getline(a:focal_lnum)
-    for hc in ["part", "chapter", "section", "subsection", "subsection", "subsubsection", "frame", "paragraph", "subparagraph"]
+    for hc in ["part", "chapter", "section", "subsection", "subsection", "subsubsection", "paragraph", "subparagraph"]
         let level = level + 1
         let match_expr = '^\s*\\' . hc . '\**\s*{\zs'
         let match_res = match(line_text, match_expr)
@@ -169,6 +169,26 @@ function s:_foldwise_tex(focal_lnum)
         endif
         if getline(a:focal_lnum+1) =~ '^\s*\\begin\s*{\s*document\s*}'
             return -1 " negative value = end fold of this level here
+        endif
+        if line_text =~ '^\s*\\begin\s*{\s*frame\s*}'
+            let offset = 0
+            let title = ""
+            while offset < 50
+                " let title = matchstr(getline(a:focal_lnum+offset), '^[^%].*\\frametitle\s*{\zs.*\ze}')
+                let title = matchstr(getline(a:focal_lnum+offset), '^[^%]*\\frametitle\s*{\zs.*\ze}')
+                if title != ""
+                    break
+                endif
+                let offset = offset + 1
+            endwhile
+            if title == ""
+                let title = "<frame>"
+            endif
+            let b:foldwise_headings[a:focal_lnum] = [1, title]
+            return 1
+        endif
+        if line_text =~ '^\s*\\end\s*{\s*frame\s*}'
+            return -1
         endif
     endif
     return 0
