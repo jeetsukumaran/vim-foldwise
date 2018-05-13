@@ -95,27 +95,30 @@ function FoldwiseExpr()
     endif
     let vline = getline(v:lnum)
     " fold markers?
-    if g:foldwise_fold_vim_markers == 1
-        if vline =~ '[{}]\{3}'
-            if vline =~ '{\{3}'
-                let level = matchstr(vline, '\({\{3}\)\@<=\d')
-                if level != ""
-                    let b:foldwise_headings[v:lnum] = [level, ""]
-                    return ">".level
-                else
-                    let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)+1, ""]
-                    return "a1"
-                endif
+    if g:foldwise_use_vim_markers == 1
+        let [fold_open, fold_close] = split(&foldmarker, ",")
+        if vline =~ fold_open
+            let level = matchstr(vline, fold_open . '\s*\zs\d')
+            let title = matchstr(vline, '^\W*\zs.*\ze' . fold_open)
+            if title == ""
+                let title = "[" . level . "]"
+            end
+            if level != ""
+                let b:foldwise_headings[v:lnum] = [level, title]
+                return ">".level
+            else
+                let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)+1, title]
+                return "a1"
             endif
-            if vline =~ '}\{3}'
-                let level = matchstr(vline, '\(}\{3}\)\@<=\d')
-                if level != ""
-                    let b:foldwise_headings[v:lnum] = [level, ""]
-                    return "<".level
-                else
-                    let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)-1, ""]
-                    return "s1"
-                endif
+        endif
+        if vline =~ fold_close
+            let level = matchstr(vline, fold_close . '\s*\zs\d')
+            if level != ""
+                let b:foldwise_headings[v:lnum] = [level, ""]
+                return "<".level
+            else
+                let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)-1, ""]
+                return "s1"
             endif
         endif
     endif
