@@ -52,8 +52,7 @@ function s:_foldwise_init()
                 \ "md": "s:_foldwise_markdown",
                 \ "markdown": "s:_foldwise_markdown",
                 \ "mkd": "s:_foldwise_markdown",
-                \ "pandoc": "s:_foldwise_pandoc",
-                \ "text": "s:_foldwise_pandoc"
+                \ "pandoc": "s:_foldwise_pandoc"
                 \ }
     for key in keys(g:foldwise_native_filetypes)
         let g:foldwise_filetypes[key] = g:foldwise_native_filetypes[key]
@@ -307,7 +306,8 @@ call s:_foldwise_init()
 command! FoldwiseInit :call <SID>_foldwise_init()
 command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
 augroup foldwise
-    au BufNewFile,BufRead * call s:_foldwise_check_buffer()
+    " au BufNewFile,BufRead * call s:_foldwise_check_buffer()
+    au FileType * call s:_foldwise_check_buffer()
 augroup END
 " }}}1
 
