@@ -37,6 +37,18 @@ let g:foldwise_mode = get(g:, "foldwise_mode", "stacked")
 let g:foldwise_use_vim_markers = get(g:, "foldwise_use_vim_markers", 1)
 let g:foldwise_auto_enable = get(g:, "foldwise_auto_enable", 1)
 let g:foldwise_user_filetypes = get(g:, "foldwise_user_filetypes", {})
+if !exists("g:foldwise_latex_levels")
+    let g:foldwise_latex_levels = {
+                \ "part": 1,
+                \ "chapter": 1,
+                \ "section": 1,
+                \ "subsection": 2,
+                \ "subsubsection": 3,
+                \ "paragraph": 4,
+                \ "subparagraph": 5,
+                \ "frame": 2
+                \}
+endif
 " }}}1
 
 " Housekeeping Functions {{{1
@@ -169,11 +181,12 @@ endfunction!
 
 function s:_foldwise_tex(focal_lnum)
     let found = 0
-    let level = 0
+    let latex_env_idx = 0
     let line_text = getline(a:focal_lnum)
-    for hc in ["part", "chapter", "section", "subsection", "subsection", "subsubsection", "paragraph", "subparagraph"]
-        let level = level + 1
-        let match_expr = '^\s*\\' . hc . '\**\s*{\zs'
+    for latex_env in ["part", "chapter", "section", "subsection", "subsubsection", "paragraph", "subparagraph"]
+        let latex_env_idx = latex_env_idx + 1
+        let level = get(g:foldwise_latex_levels, latex_env, latex_env_idx)
+        let match_expr = '^\s*\\' . latex_env . '\**\s*{\zs'
         let match_res = match(line_text, match_expr)
         if match_res >= 0
             let title = strpart(line_text, match_res, match(line_text, "}", match_res)-match_res)
@@ -196,8 +209,12 @@ function s:_foldwise_tex(focal_lnum)
             let offset = 0
             let title = ""
             while offset < 50
-                " let title = matchstr(getline(a:focal_lnum+offset), '^[^%].*\\frametitle\s*{\zs.*\ze}')
-                let title = matchstr(getline(a:focal_lnum+offset), '^[^%]*\\frametitle\s*{\zs.*\ze}')
+                " search block of lines
+                let next_line = getline(a:focal_lnum+offset)
+                if next_line =~ '^\s*\\end\s*{\s*frame\s*}'
+                    break
+                endif
+                let title = matchstr(next_line, '^[^%]*\\frametitle\s*{\zs.*\ze}')
                 if title != ""
                     break
                 endif
