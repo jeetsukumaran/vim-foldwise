@@ -317,11 +317,15 @@ endfunction
 
 " }}}1
 
+" Define Commands {{{1
+" ============================================================================
+command! FoldwiseInit :call <SID>_foldwise_init()
+command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
+" }}}
+
 " Start {{{1
 " ============================================================================
 call s:_foldwise_init()
-command! FoldwiseInit :call <SID>_foldwise_init()
-command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
 augroup foldwise
     " au BufNewFile,BufRead * call s:_foldwise_check_buffer()
     au FileType * call s:_foldwise_check_buffer()
