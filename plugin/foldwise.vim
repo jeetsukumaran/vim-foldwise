@@ -296,7 +296,7 @@ endfunction
 
 function! s:_foldwise_markdown(focal_lnum)
     let line = getline(a:focal_lnum)
-    let atx_end = match(line, '^#\{1,6}\zs')
+    let atx_end = match(line, '^#\{1,6}\s\+\zs')
     if atx_end > 0
         let level = atx_end
         let title = matchstr(line, '\S.*$', atx_end)
