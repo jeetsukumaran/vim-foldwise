@@ -39,8 +39,28 @@ let g:foldwise_auto_enable = get(g:, "foldwise_auto_enable", 1)
 let g:foldwise_user_filetypes = get(g:, "foldwise_user_filetypes", {})
 " }}}1
 
-" Private Housekeeping Functions {{{1
+" Housekeeping Functions {{{1
 " ============================================================================
+
+function s:_foldwise_init()
+    let g:foldwise_filetypes = {}
+    let g:foldwise_native_filetypes = {
+                \ "tex": "s:_foldwise_tex",
+                \ "latex": "s:_foldwise_tex",
+                \ "rst": "s:_foldwise_restructured_text",
+                \ "rest": "s:_foldwise_restructured_text",
+                \ "md": "s:_foldwise_markdown",
+                \ "markdown": "s:_foldwise_markdown",
+                \ "mkd": "s:_foldwise_markdown",
+                \ "pandoc": "s:_foldwise_pandoc"
+                \ }
+    for key in keys(g:foldwise_native_filetypes)
+        let g:foldwise_filetypes[key] = g:foldwise_native_filetypes[key]
+    endfor
+    for key in keys(g:foldwise_user_filetypes)
+        let g:foldwise_filetypes[key] = g:foldwise_user_filetypes[key]
+    endfor
+endfunction!
 
 function s:_foldwise_check_buffer()
     if g:foldwise_auto_enable
@@ -276,33 +296,11 @@ endfunction
 
 " }}}1
 
-" Client Functions/Commands {{{1
-" ============================================================================
-function FoldwiseInit()
-    let g:foldwise_filetypes = {}
-    let g:foldwise_native_filetypes = {
-                \ "tex": "s:_foldwise_tex",
-                \ "latex": "s:_foldwise_tex",
-                \ "rst": "s:_foldwise_restructured_text",
-                \ "rest": "s:_foldwise_restructured_text",
-                \ "md": "s:_foldwise_markdown",
-                \ "markdown": "s:_foldwise_markdown",
-                \ "mkd": "s:_foldwise_markdown",
-                \ "pandoc": "s:_foldwise_pandoc"
-                \ }
-    for key in keys(g:foldwise_native_filetypes)
-        let g:foldwise_filetypes[key] = g:foldwise_native_filetypes[key]
-    endfor
-    for key in keys(g:foldwise_user_filetypes)
-        let g:foldwise_filetypes[key] = g:foldwise_user_filetypes[key]
-    endfor
-endfunction!
-" }}}1
-
 " Start {{{1
 " ============================================================================
-call FoldwiseInit()
-command! FoldwiseInit :call FoldwiseInit()
+call s:_foldwise_init()
+command! FoldwiseInit :call <SID>_foldwise_init()
+command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
 augroup foldwise
     au BufNewFile,BufRead * call s:_foldwise_check_buffer()
 augroup END
