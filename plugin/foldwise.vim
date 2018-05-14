@@ -101,7 +101,7 @@ function FoldwiseExpr()
             let level = matchstr(vline, fold_open . '\s*\zs\d')
             let title = matchstr(vline, '^\W*\zs.*\ze' . fold_open)
             if title == ""
-                let title = "[" . level . "]"
+                let title = "[+" . foldlevel(v:lnum-1) + 1 . "]"
             end
             if level != ""
                 let b:foldwise_headings[v:lnum] = [level, title]
@@ -114,10 +114,8 @@ function FoldwiseExpr()
         if vline =~ fold_close
             let level = matchstr(vline, fold_close . '\s*\zs\d')
             if level != ""
-                let b:foldwise_headings[v:lnum] = [level, ""]
                 return "<".level
             else
-                let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)-1, ""]
                 return "s1"
             endif
         endif
@@ -163,13 +161,13 @@ function s:_foldwise_tex(focal_lnum)
     if found
         return level
     else
-        if a:focal_lnum == 1
-            let b:foldwise_headings[1] = [1, "<Preamble>"]
-            return 1
-        endif
-        if getline(a:focal_lnum+1) =~ '^\s*\\begin\s*{\s*document\s*}'
-            return -1 " negative value = end fold of this level here
-        endif
+        " if a:focal_lnum == 1
+        "     let b:foldwise_headings[1] = [1, "<Preamble>"]
+        "     return 1
+        " endif
+        " if getline(a:focal_lnum+1) =~ '^\s*\\begin\s*{\s*document\s*}'
+        "     return -1 " negative value = end fold of this level here
+        " endif
         if line_text =~ '^\s*\\begin\s*{\s*frame\s*}'
             let offset = 0
             let title = ""
