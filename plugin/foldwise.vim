@@ -52,7 +52,8 @@ function s:_foldwise_init()
                 \ "md": "s:_foldwise_markdown",
                 \ "markdown": "s:_foldwise_markdown",
                 \ "mkd": "s:_foldwise_markdown",
-                \ "pandoc": "s:_foldwise_pandoc"
+                \ "pandoc": "s:_foldwise_pandoc",
+                \ "text": "s:_foldwise_pandoc"
                 \ }
     for key in keys(g:foldwise_native_filetypes)
         let g:foldwise_filetypes[key] = g:foldwise_native_filetypes[key]
@@ -121,7 +122,7 @@ function FoldwiseExpr()
             let level = matchstr(vline, fold_open . '\s*\zs\d')
             let title = matchstr(vline, '^\W*\zs.*\ze' . fold_open)
             if title == ""
-                let title = "[+" . foldlevel(v:lnum-1) + 1 . "]"
+                let title = "?MARKER?"
             end
             if level != ""
                 let b:foldwise_headings[v:lnum] = [level, title]
@@ -154,6 +155,10 @@ function FoldwiseText()
     endif
     let level = stored_heading_calc[0]
     let title = stored_heading_calc[1]
+    if title == "?MARKER?"
+        let level = v:foldlevel
+        let title = "[+" . v:foldlevel . "]"
+    endif
     let leader = repeat(" ", (level * 2))
     return leader . '- ' . title . ' '
 endfunction!
