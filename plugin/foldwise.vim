@@ -180,9 +180,26 @@ endfunction!
 " ============================================================================
 
 function s:_foldwise_tex(focal_lnum)
+    if a:focal_lnum == 1
+        let b:foldwise_latex_in_document_body = 0
+    elseif !exists("b:foldwise_latex_in_document_body")
+        let b:foldwise_latex_in_document_body = 1
+    endif
+    let line_text = getline(a:focal_lnum)
+    if line_text =~ '^\s*\\begin\s*{\s*document\s*}'
+        let b:foldwise_latex_in_document_body = 1
+        let b:foldwise_headings[a:focal_lnum] = [1, "(Document: HEAD)"]
+        return 1
+    elseif line_text =~ '^\s*\\end\s*{\s*document\s*}'
+        let b:foldwise_latex_in_document_body = 0
+        let b:foldwise_headings[a:focal_lnum] = [1, "(Document: TAIL)"]
+        return 1
+    elseif !b:foldwise_latex_in_document_body
+        return 0
+    endif
     let found = 0
     let latex_env_idx = 0
-    let line_text = getline(a:focal_lnum)
+    let level = 0
     for latex_env in ["part", "chapter", "section", "subsection", "subsubsection", "paragraph", "subparagraph"]
         let latex_env_idx = latex_env_idx + 1
         let level = get(g:foldwise_latex_levels, latex_env, latex_env_idx)
@@ -198,13 +215,6 @@ function s:_foldwise_tex(focal_lnum)
     if found
         return level
     else
-        " if a:focal_lnum == 1
-        "     let b:foldwise_headings[1] = [1, "<Preamble>"]
-        "     return 1
-        " endif
-        " if getline(a:focal_lnum+1) =~ '^\s*\\begin\s*{\s*document\s*}'
-        "     return -1 " negative value = end fold of this level here
-        " endif
         if line_text =~ '^\s*\\begin\s*{\s*frame\s*}'
             let offset = 0
             let title = ""
