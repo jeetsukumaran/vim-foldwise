@@ -54,7 +54,7 @@ endif
 " Housekeeping Functions {{{1
 " ============================================================================
 
-function s:_foldwise_init()
+function! s:_foldwise_init()
     let g:foldwise_filetypes = {}
     let g:foldwise_native_filetypes = {
                 \ "tex": "s:_foldwise_tex",
@@ -74,7 +74,7 @@ function s:_foldwise_init()
     endfor
 endfunction!
 
-function s:_foldwise_check_buffer()
+function! s:_foldwise_check_buffer()
     if g:foldwise_auto_enable
         for bft in keys(g:foldwise_filetypes)
             if &ft == bft
@@ -85,21 +85,19 @@ function s:_foldwise_check_buffer()
     endif
 endfunction
 
-function s:_foldwise_apply_to_buffer()
+function! s:_foldwise_apply_to_buffer()
     setlocal foldmethod=expr
     augroup FoldwiseFastFolding
         autocmd!
         autocmd InsertEnter <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-enter")
         autocmd InsertLeave <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-leave")
-        " autocmd User TableModeEnabled call s:_foldwise_save_and_restore_foldmethod("insert-leave")
-        " autocmd User TableModeDisabled call s:_foldwise_save_and_restore_foldmethod("insert-enter")
     augroup end
     setlocal foldexpr=FoldwiseExpr()
     setlocal foldtext=FoldwiseText()
     let b:foldwise_headings = {}
 endfunction!
 
-function s:_foldwise_save_and_restore_foldmethod(mode)
+function! s:_foldwise_save_and_restore_foldmethod(mode)
     if a:mode == "insert-enter"
         let b:foldwise_foldmethod_on_insert_enter = &foldmethod
         setlocal foldmethod=manual
@@ -114,18 +112,18 @@ endfunction
 " Folding Functions {{{1
 " ============================================================================
 
-function FoldwiseExpr()
+function! FoldwiseExpr()
     " Unfortunately, when TableMode is aligning, performance dies.
     " On every line insert, folds are recalculated.
     " cannot rely on ``exists('*tablemode#IsActive')``: autoloaded
     " functions do no exist until called and as such this expression will
     " always return false until the function has been called.
-    try
-        if tablemode#IsActive()
-            return 0
-        endif
-    catch
-    endtry
+    " try
+    "     if tablemode#IsActive()
+    "         return 0
+    "     endif
+    " catch
+    " endtry
     if count(map(range(1, winnr('$')), 'bufname(winbufnr(v:val))'), bufname("")) > 1
         return
     endif
@@ -182,7 +180,7 @@ function FoldwiseExpr()
     return b:foldwise_previous_line_foldlevel
 endfunction!
 
-function FoldwiseText()
+function! FoldwiseText()
     let stored_heading_calc = get(b:foldwise_headings, v:foldstart, [-1,-1])
     if stored_heading_calc[0] == -1
         let fn_name = get(g:foldwise_filetypes, &ft, "-1")
@@ -206,7 +204,7 @@ endfunction!
 " Private Service Functions {{{1
 " ============================================================================
 
-function s:_foldwise_tex(focal_lnum)
+function! s:_foldwise_tex(focal_lnum)
     if a:focal_lnum == 1
         let b:foldwise_latex_in_document_body = 0
     elseif !exists("b:foldwise_latex_in_document_body")
