@@ -88,14 +88,24 @@ endfunction
 function s:_foldwise_apply_to_buffer()
     setlocal foldmethod=expr
     augroup FoldwiseFastFolding
-        au!
-        autocmd InsertEnter <buffer> setlocal foldmethod=manual
-        autocmd InsertLeave <buffer> setlocal foldmethod=expr
+        autocmd!
+        autocmd InsertEnter <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-enter")
+        autocmd InsertLeave <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-leave")
     augroup end
     setlocal foldexpr=FoldwiseExpr()
     setlocal foldtext=FoldwiseText()
     let b:foldwise_headings = {}
 endfunction!
+
+function s:_foldwise_save_and_restore_foldmethod(mode)
+    if a:mode == "insert-enter"
+        let b:foldwise_foldmethod_on_insert_enter = &foldmethod
+        setlocal foldmethod=manual
+    elseif a:mode == "insert-leave"
+        let fm = get(b:, "foldwise_foldmethod_on_insert_enter", "expr")
+        execute "setlocal foldmethod=" . fm
+    end
+endfunction
 
 " }}}1
 
@@ -339,8 +349,9 @@ command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
 " ============================================================================
 call s:_foldwise_init()
 augroup foldwise
+    autocmd!
     " au BufNewFile,BufRead * call s:_foldwise_check_buffer()
-    au FileType * call s:_foldwise_check_buffer()
+    autocmd FileType * call s:_foldwise_check_buffer()
 augroup END
 " }}}1
 
