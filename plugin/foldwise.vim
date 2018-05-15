@@ -87,11 +87,13 @@ endfunction
 
 function! s:_foldwise_apply_to_buffer()
     setlocal foldmethod=expr
-    augroup FoldwiseFastFolding
-        autocmd!
-        autocmd InsertEnter <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-enter")
-        autocmd InsertLeave <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-leave")
-    augroup end
+    if !exists("b:foldwise_buffer_autocommands")
+        augroup FoldwiseFastFolding
+            autocmd InsertEnter <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-enter")
+            autocmd InsertLeave <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-leave")
+        augroup end
+        let b:foldwise_buffer_autocommands = 1
+    endif
     setlocal foldexpr=FoldwiseExpr()
     setlocal foldtext=FoldwiseText()
     let b:foldwise_headings = {}
