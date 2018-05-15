@@ -79,13 +79,18 @@ function! s:_foldwise_check_buffer()
         for bft in keys(g:foldwise_filetypes)
             if &ft == bft
                 call s:_foldwise_apply_to_buffer()
-                break
             endif
         endfor
     endif
 endfunction
 
 function! s:_foldwise_apply_to_buffer()
+    if exists("b:foldwise_applied_to_buffer")
+        return
+    endif
+    let b:foldwise_buffer_foldmethod = &foldmethod
+    let b:foldwise_buffer_foldexpr = &foldexpr
+    let b:foldwise_buffer_foldtext = &foldtext
     setlocal foldmethod=expr
     if !exists("b:foldwise_buffer_autocommands")
         augroup FoldwiseFastFolding
@@ -97,6 +102,40 @@ function! s:_foldwise_apply_to_buffer()
     setlocal foldexpr=FoldwiseExpr()
     setlocal foldtext=FoldwiseText()
     let b:foldwise_headings = {}
+    let b:foldwise_applied_to_buffer = 1
+endfunction!
+
+function! s:_foldwise_deapply_buffer()
+    execute "setlocal foldmethod=" . get(b:, "foldwise_buffer_foldmethod", &foldmethod)
+    execute "setlocal foldexpr=" . get(b:, "foldwise_buffer_foldexpr", &foldexpr)
+    execute "setlocal foldtext=" . get(b:, "foldwise_buffer_foldtext", &foldtext)
+    augroup FoldwiseFastFolding
+        autocmd!
+    augroup end
+    if exists("b:foldwise_buffer_foldmethod")
+        unlet b:foldwise_buffer_foldmethod
+    endif
+    if exists("b:foldwise_buffer_foldexpr")
+        unlet b:foldwise_buffer_foldexpr
+    endif
+    if exists("b:foldwise_buffer_foldtext")
+        unlet b:foldwise_buffer_foldtext
+    endif
+    if exists("b:foldwise_buffer_autocommands")
+        unlet b:foldwise_buffer_autocommands
+    endif
+    if exists("b:foldwise_headings")
+        unlet b:foldwise_headings
+    endif
+    if exists("b:foldwise_previous_line_foldlevel")
+        unlet b:foldwise_previous_line_foldlevel
+    endif
+    if exists("b:foldwise_latex_in_document_body")
+        unlet b:foldwise_latex_in_document_body
+    endif
+    if exists("b:foldwise_applied_to_buffer")
+        unlet b:foldwise_applied_to_buffer
+    endif
 endfunction!
 
 function! s:_foldwise_save_and_restore_foldmethod(mode)
@@ -360,6 +399,7 @@ endfunction
 " ============================================================================
 command! FoldwiseInit :call <SID>_foldwise_init()
 command! FoldwiseActivate :call <SID>_foldwise_apply_to_buffer()
+command! FoldwiseDeactivate :call <SID>_foldwise_deapply_buffer()
 " }}}
 
 " Start {{{1
