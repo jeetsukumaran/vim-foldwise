@@ -188,12 +188,14 @@ function s:_foldwise_tex(focal_lnum)
     let line_text = getline(a:focal_lnum)
     if line_text =~ '^\s*\\begin\s*{\s*document\s*}'
         let b:foldwise_latex_in_document_body = 1
-        let b:foldwise_headings[a:focal_lnum] = [1, "(Document: HEAD)"]
-        return 1
+        return 0
+        " let b:foldwise_headings[a:focal_lnum] = [1, "(Document: HEAD)"]
+        " return 1
     elseif line_text =~ '^\s*\\end\s*{\s*document\s*}'
         let b:foldwise_latex_in_document_body = 0
-        let b:foldwise_headings[a:focal_lnum] = [1, "(Document: TAIL)"]
-        return 1
+        return 0
+        " let b:foldwise_headings[a:focal_lnum] = [1, "(Document: TAIL)"]
+        " return 1
     elseif !b:foldwise_latex_in_document_body
         return 0
     endif
