@@ -91,6 +91,8 @@ function s:_foldwise_apply_to_buffer()
         autocmd!
         autocmd InsertEnter <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-enter")
         autocmd InsertLeave <buffer> call s:_foldwise_save_and_restore_foldmethod("insert-leave")
+        " autocmd User TableModeEnabled call s:_foldwise_save_and_restore_foldmethod("insert-leave")
+        " autocmd User TableModeDisabled call s:_foldwise_save_and_restore_foldmethod("insert-enter")
     augroup end
     setlocal foldexpr=FoldwiseExpr()
     setlocal foldtext=FoldwiseText()
@@ -113,25 +115,36 @@ endfunction
 " ============================================================================
 
 function FoldwiseExpr()
+    " Unfortunately, when TableMode is aligning, performance dies.
+    " On every line insert, folds are recalculated.
+    " cannot rely on ``exists('*tablemode#IsActive')``: autoloaded
+    " functions do no exist until called and as such this expression will
+    " always return false until the function has been called.
+    try
+        if tablemode#IsActive()
+            return 0
+        endif
+    catch
+    endtry
     if count(map(range(1, winnr('$')), 'bufname(winbufnr(v:val))'), bufname("")) > 1
         return
     endif
     let level = -99
+
+    if v:lnum == 1
+        let b:foldwise_previous_line_foldlevel = "="
+    endif
     let fn_name = get(g:foldwise_filetypes, &ft, "-1")
     if fn_name != "-1"
         " let level = s:_foldwise_tex(v:lnum)
         exec "let level = " . fn_name . "(" . v:lnum . ")"
         if level > 0
             if g:foldwise_mode == 'stacked'
+                let b:foldwise_previous_line_foldlevel = 1
                 return ">1"
             else
+                let b:foldwise_previous_line_foldlevel = level
                 return ">" . level
-            endif
-        elseif level < 0
-            if g:foldwise_mode == 'stacked'
-                return "<1"
-            else
-                return "<" . abs(level)
             endif
         endif
     endif
@@ -147,22 +160,26 @@ function FoldwiseExpr()
             end
             if level != ""
                 let b:foldwise_headings[v:lnum] = [level, title]
+                let b:foldwise_previous_line_foldlevel = level
                 return ">".level
             else
                 let b:foldwise_headings[v:lnum] = [foldlevel(v:lnum-1)+1, title]
+                let b:foldwise_previous_line_foldlevel = "="
                 return "a1"
             endif
         endif
         if vline =~ fold_close
             let level = matchstr(vline, fold_close . '\s*\zs\d')
             if level != ""
+                let b:foldwise_previous_line_foldlevel = "="
                 return "<".level
             else
+                let b:foldwise_previous_line_foldlevel = "="
                 return "s1"
             endif
         endif
     endif
-    return "="
+    return b:foldwise_previous_line_foldlevel
 endfunction!
 
 function FoldwiseText()
