@@ -285,19 +285,21 @@ function! s:_foldwise_tex(focal_lnum)
     else
         if line_text =~ '^\s*\\begin\s*{\s*frame\s*}'
             let offset = 0
-            let title = ""
-            while offset < 50
-                " search block of lines
-                let next_line = getline(a:focal_lnum+offset)
-                if next_line =~ '^\s*\\end\s*{\s*frame\s*}'
-                    break
-                endif
-                let title = matchstr(next_line, '^[^%]*\\frametitle\s*{\zs.*\ze}')
-                if title != ""
-                    break
-                endif
-                let offset = offset + 1
-            endwhile
+            let title = matchstr(line_text, '^\s*\\begin\s*{\s*frame\s*}\s*{\zs.*\ze}')
+            if title = ""
+                while offset < 50
+                    " search block of lines
+                    let next_line = getline(a:focal_lnum+offset)
+                    if next_line =~ '^\s*\\end\s*{\s*frame\s*}'
+                        break
+                    endif
+                    let title = matchstr(next_line, '^[^%]*\\frametitle\s*{\zs.*\ze}')
+                    if title != ""
+                        break
+                    endif
+                    let offset = offset + 1
+                endwhile
+            endif
             if title == ""
                 let title = "<frame>"
             endif
