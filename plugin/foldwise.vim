@@ -284,9 +284,9 @@ function! s:_foldwise_tex(focal_lnum)
         return level
     else
         if line_text =~ '^\s*\\begin\s*{\s*frame\s*}'
-            let offset = 0
             let title = matchstr(line_text, '^\s*\\begin\s*{\s*frame\s*}\s*\(\[[^\]]*]\)*{\zs.*\ze}')
-            if title = ""
+            if title == ""
+                let offset = 0
                 while offset < 50
                     " search block of lines
                     let next_line = getline(a:focal_lnum+offset)
