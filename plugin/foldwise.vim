@@ -358,7 +358,7 @@ function! s:_foldwise_restructured_text(focal_lnum)
     " 6. "
     let found = 0
     let level = 0
-    for hc in ['#', '\*', '=', '-', '^', '"', "~", "."]
+    for hc in ['#', '\*', '=', '-', '^', '"', "~", "\."]
         let level = level + 1
         let result = s:_is_rst_heading(a:focal_lnum, hc)
         if result != ""
