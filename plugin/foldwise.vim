@@ -37,6 +37,7 @@ let g:foldwise_mode = get(g:, "foldwise_mode", "stacked")
 let g:foldwise_use_vim_markers = get(g:, "foldwise_use_vim_markers", 1)
 let g:foldwise_auto_enable = get(g:, "foldwise_auto_enable", 1)
 let g:foldwise_user_filetypes = get(g:, "foldwise_user_filetypes", {})
+let g:foldwise_exclude_file_patterns = get(g:, "foldwise_exclude_file_patterns", [])
 if !exists("g:foldwise_latex_levels")
     let g:foldwise_latex_levels = {
                 \ "part": 1,
@@ -76,6 +77,12 @@ endfunction!
 
 function! s:_foldwise_check_buffer()
     if g:foldwise_auto_enable
+        let fname = expand("%")
+        for excp in g:foldwise_exclude_file_patterns
+            if match(fname, excp) >= 0
+                return
+            endif
+        endfor
         for bft in keys(g:foldwise_filetypes)
             if &ft == bft
                 call s:_foldwise_apply_to_buffer()
