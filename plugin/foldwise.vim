@@ -244,7 +244,8 @@ function! FoldwiseText()
         let title = "[+" . v:foldlevel . "]"
     endif
     let leader = repeat(" ", (level * 2))
-    return leader . '- ' . title . ' '
+    return repeat("▊", level) . " " . title . " ⟦" . v:foldstart . "-" . v:foldend . "⟧"
+    " return leader . '- ' . title . ' '
 endfunction!
 
 " }}}1
